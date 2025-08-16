@@ -1,0 +1,64 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Space+Grotesk:wght@300..700&display=swap");
+
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Optional: CSS custom properties 00b893 */
+@theme {
+  --color-light-primary: #f7f9ff;
+  --color-secondary: #9800f7;
+  --color-dark-secondary: #151519;
+  --color-dark-primary: #212227;
+  --animate-wiggle: wiggle 1s ease-in-out infinite;
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(-3deg);
+    }
+    50% {
+      transform: rotate(3deg);
+    }
+  }
+}
+
+@layer base {
+  html {
+    font-family: "Space Grotesk", sans-serif;
+    @apply transition-colors duration-300;
+  }
+
+  /* body {
+    @apply text-gray-900 dark:text-white;
+    background-color: var(--color-light-primary);
+  } */
+
+  body.dark {
+    background-color: #101828; /* Tailwind's gray-900 */
+  }
+}
+
+@layer utilities {
+  p {
+    font-family: "Outfit", sans-serif;
+  }
+}
+
+.btn {
+  background: linear-gradient(70deg, #de2bfb, #740de8);
+  border-radius: 7px;
+  padding: 6px 20px;
+  color: white;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s ease-in-out;
+  text-transform: capitalize;
+  font-size: 13px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
