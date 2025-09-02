@@ -15,7 +15,7 @@ const RelatedPost = ({
 }) => {
   return (
     <motion.div
-      className="group relative bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
+      className="group relative bg-gray-200 dark:bg-gray-900 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-300"
       whileHover={{ y: -5 }}
     >
       {/* Post Image */}
@@ -41,7 +41,7 @@ const RelatedPost = ({
         {/* Title */}
         <Link
           to={`/blogs/${slug}`}
-          className="hover:text-secondary transition-colors"
+          className="hover:text-secondary text-gray-700 dark:text-gray-300 transition-colors"
         >
           <h2 className="text-sm sm:text-base md:text-lg font-bold line-clamp-2">
             {title}

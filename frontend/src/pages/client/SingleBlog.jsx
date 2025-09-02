@@ -40,7 +40,7 @@ const SingleBlog = () => {
   }, [slug]);
 
   return (
-    <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 ">
       {/* Sticky Share Sidebar */}
       <div className="hidden lg:flex flex-col gap-4 items-center fixed top-1/3 left-6 z-40">
         <button className="p-3 rounded-full bg-white dark:bg-gray-800 shadow-md hover:scale-110 transition">
@@ -61,7 +61,7 @@ const SingleBlog = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white dark:bg-dark-primary border border-gray-200 dark:border-gray-800 shadow-lg rounded-2xl overflow-hidden"
+        className="bg-[#F9FAFB] dark:bg-dark-primary border border-gray-200 dark:border-gray-800 shadow-lg rounded-2xl overflow-hidden"
       >
         {/* Blog Image */}
         <img
@@ -90,13 +90,13 @@ const SingleBlog = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+              <button className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition">
                 <FiThumbsUp
                   size={18}
                   className="text-gray-700 dark:text-gray-200"
                 />
               </button>
-              <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+              <button className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition">
                 <FiThumbsDown
                   size={18}
                   className="text-gray-700 dark:text-gray-200"
@@ -106,7 +106,7 @@ const SingleBlog = () => {
                 onClick={() =>
                   commentRef.current?.scrollIntoView({ behavior: "smooth" })
                 }
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition"
               >
                 <FiMessageSquare
                   size={18}
@@ -162,7 +162,7 @@ const SingleBlog = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl"
+                className="bg-gray-200 dark:bg-gray-900 p-4 rounded-xl"
               >
                 <div className="flex items-start gap-3">
                   <img
@@ -247,7 +247,7 @@ const SingleBlog = () => {
                 value={formData.comment}
                 onChange={(e) => setFormData({ comment: e.target.value })}
                 placeholder="Leave a comment..."
-                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 text-sm"
+                className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-900 dark:bg-gray-800 dark:text-gray-100 text-sm"
               />
               <button
                 disabled={!formData.comment}
