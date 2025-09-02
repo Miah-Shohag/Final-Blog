@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 const Protected = async (req, res, next) => {
   try {
     const token = req.cookies.access_token;
+
     if (!token) {
       return res
         .status(404)

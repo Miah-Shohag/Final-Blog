@@ -1,6 +1,7 @@
 import { Post } from "../models/postModel.js";
 import slugify from "slugify";
 import User from "../models/userModel.js";
+import cloudinary from "../config/cloudinary.js"; // make sure you have this
 
 // ========== ADD POST ==========
 const addPost = async (req, res, next) => {
@@ -15,26 +16,28 @@ const addPost = async (req, res, next) => {
       });
     }
 
-    // if (!req.file) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Image is required.",
-    //   });
-    // }
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Image is required.",
+      });
+    }
 
-    // const imageUrl = req.file ? req.file.path : null;
+    // ✅ Cloudinary returns path and filename
+    const imageUrl = req.file.path;
+    const publicId = req.file.filename;
 
     const newPost = new Post({
       title,
       slug: slug || slugify(title, { lower: true, strict: true }),
       content,
-      // image: imageUrl, // Cloudinary image URLKW
+      image: { url: imageUrl, public_id: publicId }, // ✅ fixed
       category,
       tags,
       status: status || "draft",
       author: userId,
     });
-    0;
+
     await newPost.save();
     await User.findByIdAndUpdate(userId, { $push: { posts: newPost._id } });
 
@@ -44,7 +47,7 @@ const addPost = async (req, res, next) => {
       post: newPost,
     });
   } catch (error) {
-    next(error); // Forward to errorHandler middleware
+    next(error);
   }
 };
 
@@ -96,7 +99,7 @@ const getSinglePost = async (req, res, next) => {
   try {
     const slug = req.params.slug;
 
-    const post = await Post.find({ slug: slug })
+    const post = await Post.findOne({ slug })
       .populate("author", "username email image")
       .populate("category", "name")
       .populate({
@@ -146,7 +149,9 @@ const editPost = async (req, res, next) => {
     post.status = status || post.status;
 
     if (req.file) {
-      post.image = req.file.path;
+      // ❌ Your old version replaced object with string
+      // ✅ Fixed: update object { url, public_id }
+      post.image = { url: req.file.path, public_id: req.file.filename };
     }
 
     await post.save();
@@ -182,6 +187,11 @@ const deletePost = async (req, res, next) => {
       });
     }
 
+    // ✅ Remove image from Cloudinary before deleting post
+    if (post.image?.public_id) {
+      await cloudinary.uploader.destroy(post.image.public_id);
+    }
+
     await Post.findByIdAndDelete(postId);
 
     await User.findByIdAndUpdate(post.author, {
@@ -197,6 +207,7 @@ const deletePost = async (req, res, next) => {
   }
 };
 
+// ✅ Like a Post
 const likePost = async (req, res, next) => {
   const userId = req.user.id;
   const postId = req.params.id;
@@ -204,24 +215,31 @@ const likePost = async (req, res, next) => {
   try {
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
     }
 
     if (post.likes.includes(userId)) {
-      return res.status(400).json({ message: "You already liked the post." });
+      return res
+        .status(400)
+        .json({ success: false, message: "You already liked this post." });
     }
 
     post.likes.push(userId);
     await post.save();
 
-    return res
-      .status(200)
-      .json({ message: "Post liked", likes: post.likes.length });
+    return res.status(200).json({
+      success: true,
+      message: "Post liked successfully",
+      likesCount: post.likes.length,
+    });
   } catch (error) {
     next(error);
   }
 };
 
+// ✅ Unlike a Post
 const unlikePost = async (req, res, next) => {
   const userId = req.user.id;
   const postId = req.params.id;
@@ -229,18 +247,31 @@ const unlikePost = async (req, res, next) => {
   try {
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+    }
+
+    if (!post.likes.includes(userId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "You haven't liked this post yet." });
     }
 
     post.likes = post.likes.filter((id) => id.toString() !== userId.toString());
     await post.save();
 
-    res.status(200).json({ message: "Post unliked", likes: post.likes.length });
+    res.status(200).json({
+      success: true,
+      message: "Post unliked successfully",
+      likesCount: post.likes.length,
+    });
   } catch (error) {
     next(error);
   }
 };
 
+// ✅ Add Comment
 const addComment = async (req, res, next) => {
   const userId = req.user.id;
   const slug = req.params.slug;
@@ -248,12 +279,17 @@ const addComment = async (req, res, next) => {
   try {
     const { comment } = req.body;
 
+    if (!comment || comment.trim() === "") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Comment cannot be empty." });
+    }
+
     const post = await Post.findOne({ slug });
     if (!post) {
-      return res.status(404).json({
-        success: false,
-        message: "Post not found.",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found." });
     }
 
     const newComment = {
@@ -265,7 +301,6 @@ const addComment = async (req, res, next) => {
     post.comments.push(newComment);
     await post.save();
 
-    // Return the newly added comment (last one in array)
     const addedComment = post.comments[post.comments.length - 1];
 
     res.status(201).json({
@@ -274,43 +309,65 @@ const addComment = async (req, res, next) => {
       comment: addedComment,
     });
   } catch (error) {
-    next(error); // Don't forget to pass the error
+    next(error);
   }
 };
 
-// Add a reply to a comment
+// ✅ Reply to Comment
 const replyToComment = async (req, res, next) => {
   try {
-    const post = await Post.findById(req.params.postId);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    const { slug, id } = req.params;
+    const { reply } = req.body;
 
-    const comment = post.comments.id(req.params.commentId);
-    if (!comment) return res.status(404).json({ message: "Comment not found" });
+    if (!reply || reply.trim() === "") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Reply cannot be empty." });
+    }
+
+    const post = await Post.findOne({ slug });
+    if (!post)
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+
+    const comment = post.comments.id(id);
+    if (!comment)
+      return res
+        .status(404)
+        .json({ success: false, message: "Comment not found" });
 
     comment.replies.push({
-      reply: req.body.reply,
-      user: req.user._id,
+      reply,
+      user: req.user.id,
       createdAt: new Date(),
     });
 
     await post.save();
-    res.status(201).json(post);
+
+    res.status(201).json({
+      success: true,
+      message: "Reply added successfully",
+      comment,
+    });
   } catch (error) {
     next(error);
   }
 };
 
+// ✅ Get Related Posts
 const relatedPosts = async (req, res, next) => {
   const { slug } = req.params;
 
   try {
-    const currentPost = await Post.findOne({ slug: slug });
-
+    const currentPost = await Post.findOne({ slug });
     if (!currentPost) {
-      return res.status(404).json({ success: false, message: "Post no found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
     }
 
-    const relatedPosts = await Post.find({
+    const related = await Post.find({
       _id: { $ne: currentPost._id },
       $or: [
         { category: { $in: currentPost.category } },
@@ -324,9 +381,197 @@ const relatedPosts = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: "Related posts retrieved.",
-      posts: relatedPosts,
+      message: "Related posts retrieved successfully.",
+      posts: related,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ✅ Edit Comment
+const editComment = async (req, res, next) => {
+  try {
+    const { slug, id } = req.params;
+    const { comment } = req.body;
+
+    if (!comment || comment.trim() === "") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Comment cannot be empty." });
+    }
+
+    const post = await Post.findOne({ slug });
+    if (!post)
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+
+    const existingComment = post.comments.id(id);
+    if (!existingComment) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Comment not found" });
+    }
+
+    // only author can edit their comment
+    if (existingComment.user.toString() !== req.user.id.toString()) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Not authorized to edit this comment",
+        });
+    }
+
+    existingComment.comment = comment;
+    existingComment.updatedAt = new Date();
+
+    await post.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Comment updated successfully",
+      comment: existingComment,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ✅ Delete Comment
+const deleteComment = async (req, res, next) => {
+  try {
+    const { slug, id } = req.params;
+
+    const post = await Post.findOne({ slug });
+    if (!post)
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+
+    const comment = post.comments.id(id);
+    if (!comment)
+      return res
+        .status(404)
+        .json({ success: false, message: "Comment not found" });
+
+    // only author or post owner can delete
+    if (
+      comment.user.toString() !== req.user.id.toString() &&
+      post.author.toString() !== req.user.id.toString()
+    ) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Not authorized to delete this comment",
+        });
+    }
+
+    comment.deleteOne();
+    await post.save();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Comment deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ✅ Edit Reply
+const editReply = async (req, res, next) => {
+  try {
+    const { slug, commentId, replyId } = req.params;
+    const { reply } = req.body;
+
+    if (!reply || reply.trim() === "") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Reply cannot be empty." });
+    }
+
+    const post = await Post.findOne({ slug });
+    if (!post)
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+
+    const comment = post.comments.id(commentId);
+    if (!comment)
+      return res
+        .status(404)
+        .json({ success: false, message: "Comment not found" });
+
+    const existingReply = comment.replies.id(replyId);
+    if (!existingReply)
+      return res
+        .status(404)
+        .json({ success: false, message: "Reply not found" });
+
+    if (existingReply.user.toString() !== req.user.id.toString()) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized to edit this reply" });
+    }
+
+    existingReply.reply = reply;
+    existingReply.updatedAt = new Date();
+
+    await post.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Reply updated successfully",
+      reply: existingReply,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ✅ Delete Reply
+const deleteReply = async (req, res, next) => {
+  try {
+    const { slug, commentId, replyId } = req.params;
+
+    const post = await Post.findOne({ slug });
+    if (!post)
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+
+    const comment = post.comments.id(commentId);
+    if (!comment)
+      return res
+        .status(404)
+        .json({ success: false, message: "Comment not found" });
+
+    const reply = comment.replies.id(replyId);
+    if (!reply)
+      return res
+        .status(404)
+        .json({ success: false, message: "Reply not found" });
+
+    if (
+      reply.user.toString() !== req.user.id.toString() &&
+      post.author.toString() !== req.user.id.toString()
+    ) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Not authorized to delete this reply",
+        });
+    }
+
+    reply.deleteOne();
+    await post.save();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Reply deleted successfully" });
   } catch (error) {
     next(error);
   }
@@ -339,9 +584,9 @@ export {
   getSinglePost,
   editPost,
   deletePost,
-  relatedPosts,
   likePost,
   unlikePost,
   addComment,
   replyToComment,
+  relatedPosts,
 };

@@ -24,9 +24,13 @@ const DashboardDarkMode = () => {
   return (
     <button
       onClick={() => setIsDashboardDark(!isDashboardDark)}
-      className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+      className="p-2 rounded-full bg-gray-100 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
     >
-      {isDashboardDark ? <FiSun size={18} /> : <FiMoon size={18} />}
+      {isDashboardDark ? (
+        <FiSun size={18} className="text-secondary" />
+      ) : (
+        <FiMoon className="text-secondary" size={18} />
+      )}
     </button>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { LuBell, LuMenu, LuMessageCircle } from "react-icons/lu";
+import { LuBell, LuMenu, LuMessageSquare } from "react-icons/lu";
 import { ThemeContext } from "../../hooks/ThemeContext";
 import DarkMode from "./DashboardDarkMode";
 
@@ -29,31 +29,41 @@ const Header = () => {
       <div className="flex gap-5 items-center">
         <button
           onClick={() => setIsOpenMenu((prev) => !prev)}
-          className="bg-slate-100 dark:bg-dark-secondary  p-2 rounded-full transition"
+          className="bg-slate-100 dark:bg-dark-secondary p-2 rounded-full transition"
+          aria-label="Toggle sidebar menu"
         >
-          <LuMenu size={18} />
+          <LuMenu size={18} className="text-violet-700" />
         </button>
         <DarkMode />
       </div>
+
       {/* Right: Icons */}
       <div className="flex items-center gap-4 relative" ref={dropdownRef}>
         {/* Notification */}
         <div className="relative">
           <button
             onClick={() => toggleDropdown("notification")}
+            aria-haspopup="true"
+            aria-expanded={openDropdown === "notification"}
             className="p-2 bg-slate-100 dark:bg-dark-secondary rounded-full transition relative"
           >
-            <LuBell size={18} />
-            <span className=" flex size-3 absolute -top-1 -right-1">
+            <LuBell size={18} className="text-violet-700" />
+            <span className="flex size-3 absolute -top-1 -right-1">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-75"></span>
               <span className="relative inline-flex size-3 rounded-full bg-secondary"></span>
             </span>
           </button>
 
           {openDropdown === "notification" && (
-            <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-md p-3 z-50">
-              <p className="text-sm font-semibold mb-2">Notifications</p>
-              <ul className="space-y-1 text-sm text-gray-700">
+            <div
+              className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-secondary 
+                border border-gray-200 dark:border-gray-700 rounded-lg shadow-md 
+                p-3 z-50 animate-in fade-in-0 zoom-in-95"
+            >
+              <p className="text-sm font-semibold mb-2 dark:text-gray-200">
+                Notifications
+              </p>
+              <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
                 <li>🔔 New comment on your post</li>
                 <li>📌 Weekly update available</li>
                 <li>✅ Task completed</li>
@@ -66,19 +76,27 @@ const Header = () => {
         <div className="relative">
           <button
             onClick={() => toggleDropdown("message")}
+            aria-haspopup="true"
+            aria-expanded={openDropdown === "message"}
             className="p-2 bg-slate-100 dark:bg-dark-secondary rounded-full transition relative"
           >
-            <LuMessageCircle size={18} />
-            <span className=" flex size-3 absolute -top-1 -right-1">
+            <LuMessageSquare size={18} className="text-violet-700" />
+            <span className="flex size-3 absolute -top-1 -right-1">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-75"></span>
               <span className="relative inline-flex size-3 rounded-full bg-secondary"></span>
             </span>
           </button>
 
           {openDropdown === "message" && (
-            <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-md p-3 z-50">
-              <p className="text-sm font-semibold mb-2">Messages</p>
-              <ul className="space-y-1 text-sm text-gray-700">
+            <div
+              className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-secondary 
+                border border-gray-200 dark:border-gray-700 rounded-lg shadow-md 
+                p-3 z-50 animate-in fade-in-0 zoom-in-95"
+            >
+              <p className="text-sm font-semibold mb-2 dark:text-gray-200">
+                Messages
+              </p>
+              <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
                 <li>💬 John: "Hey, are you available?"</li>
                 <li>💬 Anna: "Check out this update."</li>
                 <li>💬 Admin: "System maintenance tonight."</li>

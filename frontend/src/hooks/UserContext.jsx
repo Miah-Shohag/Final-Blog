@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useContext, useState, createContext, useEffect } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
 
 export const UserContext = createContext();
 
@@ -26,9 +26,9 @@ export const UserContextProvider = ({ children }) => {
 
   const handleLogout = async () => {
     try {
-      await axios.post("/api/users/logout"); // backend should clear cookie
+      const res = await axios.post("/api/users/logout"); // backend should clear cookie
       setUser(null);
-      toast.success("Logged out successfully");
+      toast.success(res.data.message);
       navigate("/auth");
     } catch (err) {
       toast.error("Logout failed");

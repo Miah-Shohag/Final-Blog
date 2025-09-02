@@ -14,16 +14,16 @@ const postSchema = new mongoose.Schema(
       trim: true,
     },
     content: { type: String, required: true },
-    image: { type: String },
-    comments: [commentSchema],
-    category: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
-    tags: {
-      type: [String],
-      validate: {
-        validator: (v) => v.length > 0,
-        message: "At least one tag is required",
-      },
+
+    // ✅ Optional image object for Cloudinary
+    image: {
+      url: { type: String, required: false },
+      public_id: { type: String, required: false },
     },
+
+    comments: [commentSchema], // commentSchema should have `text` field
+    category: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
+    tags: [],
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     views: { type: Number, default: 0 },
     author: {

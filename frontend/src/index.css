@@ -7,19 +7,9 @@
 /* Optional: CSS custom properties 00b893 */
 @theme {
   --color-light-primary: #f7f9ff;
-  --color-secondary: #9800f7;
-  --color-dark-secondary: #151519;
-  --color-dark-primary: #212227;
-  --animate-wiggle: wiggle 1s ease-in-out infinite;
-  @keyframes wiggle {
-    0%,
-    100% {
-      transform: rotate(-3deg);
-    }
-    50% {
-      transform: rotate(3deg);
-    }
-  }
+  --color-secondary: #7f27ff;
+  --color-dark-secondary: #010313;
+  --color-dark-primary: #080a1a;
 }
 
 @layer base {

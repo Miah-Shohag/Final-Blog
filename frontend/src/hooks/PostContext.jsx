@@ -14,13 +14,14 @@ export const PostContextProvider = ({ children }) => {
   const [posts, setPosts] = useState([]);
   const [singlePost, setSinglePost] = useState(null);
   const [comments, setComments] = useState([]);
+  const [replies, setReplies] = useState([]);
   const [relatedPosts, setRelatedPosts] = useState([]);
 
   // Add Post
   const addPost = async (formData) => {
     try {
       const res = await axios.post("/api/posts/create-post", formData, {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
       console.log(res.data);
@@ -44,11 +45,9 @@ export const PostContextProvider = ({ children }) => {
   // Get single post by slug
   const fetchSinglePost = async (slug) => {
     try {
-      const res = await axios.get(`/api/posts/${slug}`, {
-        withCredentials: true,
-      });
+      const res = await axios.get(`/api/posts/${slug}`);
       // store the post object directly
-      setSinglePost(res.data.post[0]);
+      setSinglePost(res.data.post);
     } catch (error) {
       console.error("Failed to fetch post", error);
     }
@@ -94,11 +93,31 @@ export const PostContextProvider = ({ children }) => {
         withCredentials: true,
       });
       const newComment = res.data.comment;
+      console.log(res.data);
       setComments((prev) => [...prev, newComment]);
       toast.success(res.data.message || "Comment added");
     } catch (error) {
       toast.error("Could not add comment");
       console.error(error);
+    }
+  };
+
+  // Add Comment
+
+  const replyComment = async ({ slug, replyText, commentId }) => {
+    try {
+      const res = await axios.post(
+        `/api/posts/${slug}/comment/${commentId}/reply`,
+        { reply: replyText }, // ✅ must be an object
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      console.log("Reply added:", res.data);
+    } catch (error) {
+      toast.error("Could not add comment");
+      console.error(error.message);
     }
   };
 
@@ -122,6 +141,8 @@ export const PostContextProvider = ({ children }) => {
         fetchSinglePost,
         handleUpdatePost,
         addComment,
+        replyComment,
+        replies,
         fetchRelatedPosts,
         handlePostDelete,
         relatedPosts,

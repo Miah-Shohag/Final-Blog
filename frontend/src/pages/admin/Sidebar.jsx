@@ -16,8 +16,8 @@ import { UserContext } from "../../hooks/UserContext";
 
 const Sidebar = () => {
   const [openSubMenu, setOpenSubMenu] = useState(null);
-
   const { user } = useContext(UserContext);
+
   const toggleSubMenu = (name) => {
     setOpenSubMenu((prev) => (prev === name ? null : name));
   };
@@ -105,20 +105,34 @@ const Sidebar = () => {
     item.roles.includes(user?.role)
   );
 
+  const navLinkClasses = ({ isActive }) =>
+    `flex items-center gap-2 px-4 py-2 rounded transition-colors duration-200
+     dark:hover:bg-dark-secondary
+     ${
+       isActive
+         ? "bg-[#161616] text-sm font-medium text-white"
+         : "text-gray-700 dark:text-gray-300 hover:bg-gray-200"
+     }`;
+
   return (
     <div className="w-full">
-      <h2 className="text-xl font-bold mb-4 hidden lg:block p-5 text-center w-full">
+      <h2 className="text-xl font-bold mb-4 hidden lg:block p-5 text-center">
         Admin Panel
       </h2>
       <nav className="overflow-y-auto">
-        <ul className="flex flex-col gap-2 mx-5">
+        <ul className="flex flex-col gap-2 mx-4">
           {filteredNavItems.map((item, index) => (
             <li key={index} className="relative font-medium text-sm">
-              <div onClick={() => item.submenu && toggleSubMenu(item.name)}>
-                {item.submenu ? (
-                  <button className="relative w-full text-left px-4 py-2 hover:bg-gray-100 rounded dark:hover:bg-dark-secondary flex items-center gap-2">
+              {item.submenu ? (
+                <>
+                  <button
+                    onClick={() => toggleSubMenu(item.name)}
+                    aria-expanded={openSubMenu === item.name}
+                    aria-controls={`${item.name}-submenu`}
+                    className="relative w-full text-left px-4 py-2 dark:text-gray-100 flex items-center gap-2 rounded hover:bg-gray-100 dark:hover:bg-dark-secondary"
+                  >
                     <span>{item.icon}</span>
-                    <span className="hidden lg:block">{item.name}</span>
+                    <span className="">{item.name}</span>
                     <span className="absolute right-4">
                       {openSubMenu === item.name ? (
                         <IoIosArrowUp />
@@ -127,46 +141,32 @@ const Sidebar = () => {
                       )}
                     </span>
                   </button>
-                ) : (
-                  <NavLink
-                    to={item.path}
-                    end="/dashboard"
-                    className={({ isActive }) =>
-                      `flex items-center gap-2 px-4 py-2 rounded-lg transition-colors dark:hover:bg-dark-secondary ${
-                        isActive
-                          ? "bg-gradient-to-r from-fuchsia-500 to-violet-700 text-sm font-medium text-white dark:bg-secondary dark:hover:bg-secondary"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 "
-                      }`
-                    }
-                  >
-                    <span>{item.icon}</span>
-                    <span className=" hidden lg:block">{item.name} </span>
-                  </NavLink>
-                )}
-              </div>
 
-              {/* Render submenu if it's open */}
-              {item.submenu && openSubMenu === item.name && (
-                <ul className="pl-7 mt-2 rounded transition-all duration-200">
-                  {item.submenu
-                    .filter((sub) => sub.roles.includes(user?.role))
-                    .map((subItem, subIndex) => (
-                      <li key={subIndex}>
-                        <NavLink
-                          to={subItem.path}
-                          className={({ isActive }) =>
-                            `block px-4 py-2 rounded-lg transition-colors  ${
-                              isActive
-                                ? "bg-gradient-to-r from-fuchsia-500 to-violet-700 text-sm font-medium text-white dark:bg-secondary"
-                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-secondary"
-                            }`
-                          }
-                        >
-                          {subItem.name}
-                        </NavLink>
-                      </li>
-                    ))}
-                </ul>
+                  {/* Submenu */}
+                  <ul
+                    id={`${item.name}-submenu`}
+                    className={`pl-7 rounded overflow-hidden transition-all duration-300 ease-in-out ${
+                      openSubMenu === item.name
+                        ? "max-h-40 opacity-100"
+                        : "max-h-0 opacity-0"
+                    }`}
+                  >
+                    {item.submenu
+                      .filter((sub) => sub.roles.includes(user?.role))
+                      .map((subItem, subIndex) => (
+                        <li key={subIndex}>
+                          <NavLink to={subItem.path} className={navLinkClasses}>
+                            {subItem.name}
+                          </NavLink>
+                        </li>
+                      ))}
+                  </ul>
+                </>
+              ) : (
+                <NavLink to={item.path} className={navLinkClasses} end>
+                  <span>{item.icon}</span>
+                  <span className="">{item.name}</span>
+                </NavLink>
               )}
             </li>
           ))}

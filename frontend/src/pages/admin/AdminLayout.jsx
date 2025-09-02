@@ -20,9 +20,9 @@ const AdminLayout = () => {
       </div>
       <div className={`main ${isOpenMenu ? "ml-0" : "ml-64"}`}>
         <Header />
-        <div className="p-5">
+        <main className="p-5">
           <Outlet />
-        </div>
+        </main>
       </div>
     </div>
   );

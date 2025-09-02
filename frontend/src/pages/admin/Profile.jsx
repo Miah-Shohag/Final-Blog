@@ -5,8 +5,10 @@ import { LuEye, LuEyeOff } from "react-icons/lu";
 import { FiUpload } from "react-icons/fi";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { UserContext } from "../../hooks/UserContext";
 
 const Profile = () => {
+  const { user } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({ image: null });
@@ -22,6 +24,7 @@ const Profile = () => {
       [field]: !prev[field],
     }));
   };
+  console.log(user);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -34,9 +37,7 @@ const Profile = () => {
 
   const updateUserImage = async (e) => {
     e.preventDefault();
-    if (!formData.image) {
-      return toast.error("Please select an image first.");
-    }
+    if (!formData.image) return toast.error("Please select an image first.");
 
     const data = new FormData();
     data.append("image", formData.image);
@@ -44,18 +45,20 @@ const Profile = () => {
     setLoading(true);
     try {
       const res = await axios.put(
-        "http://localhost:8000/api/users/me/profile",
+        "http://localhost:3000/api/users/upload-avatar",
         data,
         {
           withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
+
       toast.success(res.data.message || "Avatar updated!");
+      setImagePreview(`http://localhost:3000/${res.data.file}`);
+
+      // Update User Context immediately
     } catch (error) {
-      console.log(error);
+      console.error(error); // always log full error
       toast.error(error?.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -67,7 +70,11 @@ const Profile = () => {
       <div className="flex gap-5">
         <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-secondary shadow group">
           <img
-            src={imagePreview || user?.image || Avatar}
+            src={
+              imagePreview ||
+              (user?.image && `http://localhost:3000/${user?.image}`) ||
+              Avatar
+            }
             alt="User avatar"
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
@@ -98,9 +105,8 @@ const Profile = () => {
           <input
             type="file"
             id="image"
-            name="image"
+            name="image" // THIS MUST MATCH multer.single("image")
             accept="image/*"
-            className="hidden"
             onChange={handleImageChange}
           />
         </div>

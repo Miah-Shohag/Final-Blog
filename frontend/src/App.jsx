@@ -27,8 +27,11 @@ import AllPosts from "./pages/admin/AllPosts";
 import Logout from "./pages/admin/Logout";
 import SingleBlog from "./pages/client/SingleBlog";
 import PublicRoute from "./pages/admin/PublicRoute";
+import { useContext } from "react";
+import { UserContext } from "./hooks/UserContext";
 
 const App = () => {
+  const { user } = useContext(UserContext);
   return (
     <>
       <Toaster />

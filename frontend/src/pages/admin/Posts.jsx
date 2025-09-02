@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { ImCancelCircle } from "react-icons/im";
 import { PostContext } from "../../hooks/PostContext";
 import { Link } from "react-router-dom";
 
 const getStatusColor = {
-  draft: "bg-gray-200 text-gray-600",
-  pending: "bg-purple-200 text-purple-600",
-  published: "bg-green-200 text-green-600",
+  draft: "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
+  pending:
+    "bg-purple-200 text-purple-600 dark:bg-purple-700 dark:text-purple-200",
+  published:
+    "bg-green-200 text-green-600 dark:bg-green-700 dark:text-green-200",
 };
 
 const PostTable = () => {
@@ -15,7 +17,6 @@ const PostTable = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteToPost, setDeleteToPost] = useState(null);
-  const [editPost, setEditPost] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const itemsPerPage = 5;
@@ -23,11 +24,6 @@ const PostTable = () => {
   useEffect(() => {
     fetchPosts();
   }, []);
-
-  const handleEdit = (post) => {
-    setEditPost(post);
-    s;
-  };
 
   const filteredPosts = posts?.filter((post) => {
     const matchesSearch =
@@ -56,7 +52,6 @@ const PostTable = () => {
     try {
       await handlePostDelete(id);
       setLoading(false);
-
       setDeleteToPost(null);
     } catch (error) {
       setDeleteToPost(null);
@@ -66,22 +61,21 @@ const PostTable = () => {
 
   return (
     <div className="bg-white dark:bg-dark-primary rounded-xl shadow p-5 w-full">
-      {/* Search and Filter Controls */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3 mb-4">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3 mb-4">
+      {/* Search + Filter + Button */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row gap-3 w-1/2">
           <input
             type="text"
             placeholder="Search by title or content..."
-            className="flex-1 w-full md:w-1/3 border px-4 py-2 rounded-md text-sm"
+            className="flex-1 border px-4 py-2 rounded-md text-sm bg-white dark:bg-dark-secondary dark:text-gray-300"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
           />
-
           <select
-            className="w-full flex-1 md:w-1/4 border px-4 py-2 rounded-md text-sm"
+            className="w-full sm:w-48 border px-4 py-2 rounded-md text-sm bg-white dark:bg-dark-secondary dark:text-gray-300"
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
@@ -94,19 +88,23 @@ const PostTable = () => {
             <option value="draft">Draft</option>
           </select>
         </div>
-        <Link to="/dashboard/create-post" className="text-sm">
-          <button className="px-4 py-2 btn text-white rounded-md cursor-pointer hover:bg-secondary-dark transition-colors">
+
+        <Link to="/dashboard/create-post" className="text-sm w-full sm:w-auto">
+          <button className="w-full sm:w-auto px-4 py-2 btn text-white rounded-md cursor-pointer hover:bg-secondary-dark transition-colors">
             Add New Post
           </button>
         </Link>
       </div>
+
       {/* Table */}
-      {posts.length === 0 && <p>No posts found</p>}
+      {posts.length === 0 && (
+        <p className="text-gray-500 dark:text-gray-400">No posts found</p>
+      )}
       {posts && (
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left border-collapse">
-            <thead className="bg-gray-100 dark:bg-dark-secondary text-gray-700 dark:text-gray-400 uppercase text-xs">
-              <tr className="py-6">
+            <thead className="bg-gray-100 dark:bg-dark-secondary text-gray-700 dark:text-gray-300 uppercase text-xs">
+              <tr>
                 <th className="px-4 py-3">Image</th>
                 <th className="px-4 py-3">Title</th>
                 <th className="px-4 py-3">Content</th>
@@ -118,12 +116,12 @@ const PostTable = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedPosts.map((post, index) => (
+              {paginatedPosts.map((post) => (
                 <tr
                   key={post._id}
-                  className="border-b dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-dark-secondary transition py-2"
+                  className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-dark-secondary transition"
                 >
-                  <td className=" px-2 py-3">
+                  <td className="px-2 py-3">
                     <div className="w-12 h-12 overflow-hidden rounded-md">
                       <img
                         src={post.image}
@@ -132,10 +130,10 @@ const PostTable = () => {
                       />
                     </div>
                   </td>
-                  <td className="px-3 py-3 font-medium">
+                  <td className="px-3 py-3 font-medium dark:text-gray-200">
                     {post.title.substring(0, 30)}...
                   </td>
-                  <td className="px-3  py-3 font-medium">
+                  <td className="px-3 py-3 font-medium dark:text-gray-300">
                     {post.content.substring(0, 60)}...
                   </td>
                   <td>
@@ -147,36 +145,34 @@ const PostTable = () => {
                       {post.status}
                     </span>
                   </td>
-                  <td className="px-3 py-3 ">
-                    <div className="flex gap-1">
+                  <td className="px-3 py-3">
+                    <div className="flex flex-wrap gap-1">
                       {post.category?.map((cat, index) => (
                         <span
                           key={index}
-                          className="bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full"
+                          className="bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200 text-xs font-medium px-3 py-1 rounded-full"
                         >
                           {cat.name}
                         </span>
                       ))}
                     </div>
                   </td>
-
                   <td className="px-3 py-3 capitalize text-secondary font-medium">
                     {post?.author?.username || "Unknown"}
                   </td>
-
-                  <td className="px-3  py-3">
+                  <td className="px-3 py-3 dark:text-gray-300">
                     {new Date(post.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-2 py-4 ">
+                  <td className="px-2 py-4">
                     <Link
                       to={`/dashboard/edit-post/${post.slug}`}
-                      className="text-blue-600 bg-blue-200 rounded-full px-3 py-1 font-medium text-xs mr-2"
+                      className="text-blue-600 bg-blue-200 dark:bg-blue-800 dark:text-blue-200 rounded-full px-3 py-1 font-medium text-xs mr-2"
                     >
                       Edit
                     </Link>
                     <button
                       onClick={() => setDeleteToPost(post)}
-                      className="text-red-600 bg-red-200 rounded-full px-3 py-1 font-medium text-xs"
+                      className="text-red-600 bg-red-200 dark:bg-red-800 dark:text-red-200 rounded-full px-3 py-1 font-medium text-xs"
                     >
                       Delete
                     </button>
@@ -185,7 +181,10 @@ const PostTable = () => {
               ))}
               {paginatedPosts.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="text-center py-5 text-gray-400">
+                  <td
+                    colSpan="8"
+                    className="text-center py-5 text-gray-400 dark:text-gray-500"
+                  >
                     No matching posts found.
                   </td>
                 </tr>
@@ -195,11 +194,12 @@ const PostTable = () => {
         </div>
       )}
 
+      {/* Pagination */}
       <div className="flex items-center justify-center mt-4 gap-2">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1 text-sm bg-gray-100 dark:bg-dark-secondary rounded disabled:opacity-50"
+          className="px-3 py-1 text-sm bg-gray-100 dark:bg-dark-secondary rounded disabled:opacity-50 dark:text-gray-300"
         >
           Previous
         </button>
@@ -210,7 +210,7 @@ const PostTable = () => {
             className={`px-3 py-1 text-sm rounded ${
               currentPage === i + 1
                 ? "bg-secondary text-white"
-                : "bg-gray-100 text-black"
+                : "bg-gray-100 text-black dark:bg-dark-secondary dark:text-gray-300"
             }`}
           >
             {i + 1}
@@ -219,30 +219,30 @@ const PostTable = () => {
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-1 text-sm bg-gray-100 dark:bg-dark-secondary rounded disabled:opacity-50"
+          className="px-3 py-1 text-sm bg-gray-100 dark:bg-dark-secondary rounded disabled:opacity-50 dark:text-gray-300"
         >
           Next
         </button>
       </div>
 
-      {/* Delete post */}
+      {/* Delete Modal */}
       {deleteToPost && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative">
+          <div className="bg-white dark:bg-dark-primary p-6 rounded-lg shadow-xl w-full max-w-md relative">
             <span className="flex justify-center items-center mb-2">
               <ImCancelCircle size={28} className="text-red-600" />
             </span>
-            <span className="text-center text-xl block font-bold">
+            <span className="text-center text-xl block font-bold dark:text-gray-200">
               Are you sure?
             </span>
-            <span className="text-xs block text-center my-3">
-              Are you sure you want to delete the task from the record? This
-              process cannot be undone.
+            <span className="text-xs block text-center my-3 dark:text-gray-400">
+              Are you sure you want to delete this post? This process cannot be
+              undone.
             </span>
-            <div className="text-right flex gap-5 justify-center items-center mt-5">
+            <div className="flex gap-5 justify-center items-center mt-5">
               <button
                 onClick={() => setDeleteToPost(null)}
-                className="px-3 py-1 text-sm font-medium capitalize bg-gray-200 text-black rounded-lg"
+                className="px-3 py-1 text-sm font-medium capitalize bg-gray-200 text-black dark:bg-gray-700 dark:text-gray-200 rounded-lg"
               >
                 Cancel
               </button>

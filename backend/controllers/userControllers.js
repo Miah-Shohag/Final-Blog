@@ -52,34 +52,35 @@ const register = async (req, res, next) => {
   }
 };
 
-const uploadImage = async (req, res, next) => {
+const updateImage = async (req, res, next) => {
   try {
-    const id = req.user.id;
-    const user = await User.findById(id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
     if (!req.file) {
-      return res.status(400).json({ message: "No image uploaded" });
+      return res
+        .status(400)
+        .json({ success: false, message: "No image uploaded" });
     }
 
-    await User.findByIdAndUpdate(
-      { _id: id },
-      {
-        image: req.file.path,
-      },
+    const imageUrl = req.file.path; // Cloudinary URL
+
+    // Update user in DB
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { image: imageUrl },
       { new: true }
     );
 
-    return res.status(200).json({
-      message: "Image uploaded successfully",
-      url: req.file.path,
-      public_id: req.file.filename,
+    res.status(200).json({
+      success: true,
+      message: "Avatar updated successfully!",
+      imageUrl: updatedUser.image,
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong during upload",
+      error: err.message,
+    });
   }
 };
 
@@ -386,7 +387,7 @@ const updatePassword = async (req, res, next) => {
 
 export {
   register,
-  uploadImage,
+  updateImage,
   getUsers,
   getSingleUser,
   login,

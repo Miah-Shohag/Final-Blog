@@ -2,17 +2,23 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../../components/client/Navbar";
 import Footer from "./Footer";
+import Sidebar from "../../components/client/Sidebar";
 
 const ClientLayout = () => {
   return (
-    <div className="dark:bg-dark-primary">
-      <header>
+    <div className="min-h-screen flex flex-col bg-white dark:bg-dark-secondary transition-colors duration-500">
+      {/* Navbar */}
+      <header className="sticky top-0 z-50 bg-white dark:bg-dark-secondary backdrop-blur-2xl">
         <Navbar />
       </header>
-      <main className="max-w-7xl container mx-auto px-5 my-20">
+
+      {/* Main content */}
+      <main className="">
         <Outlet />
       </main>
-      <footer>
+
+      {/* Footer */}
+      <footer className="w-full bg-gray-100 dark:bg-dark-primary">
         <Footer />
       </footer>
     </div>

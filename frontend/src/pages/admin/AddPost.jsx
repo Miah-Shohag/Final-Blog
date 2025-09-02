@@ -57,16 +57,13 @@ const AddPost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // if (!formData.image) {
-    //   toast.error("Image is required");
-    //   return;
-    // }
+    setLoading(true);
 
     try {
       await addPost(formData);
-      console.log(formData);
-      // Reset form if needed
+      toast.success("Post added successfully!");
+
+      // Reset form
       setFormData({
         title: "",
         slug: "",
@@ -78,6 +75,7 @@ const AddPost = () => {
       });
       setImagePreview(null);
     } catch (error) {
+      toast.error("Failed to add post");
       console.error(error);
     } finally {
       setLoading(false);
@@ -85,22 +83,27 @@ const AddPost = () => {
   };
 
   return (
-    <div className="max-w-[80%] mx-auto p-6 rounded-lg shadow mt-6 bg-white dark:bg-dark-primary">
-      <div className="flex items-center gap-3 justify-between">
-        <h2 className="text-2xl font-semibold">Add New Post</h2>
+    <div className="max-w-5xl mx-auto p-6 rounded-xl shadow bg-white dark:bg-dark-primary mt-6 transition-colors">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+          Add New Post
+        </h2>
         <Link
           to="/dashboard/posts"
-          className="btn my-3 hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer"
+          className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
         >
           All Posts
         </Link>
       </div>
 
+      {/* Form */}
       <form
         onSubmit={handleSubmit}
-        className="space-y-4"
+        className="space-y-5"
         encType="multipart/form-data"
       >
+        {/* Title */}
         <InputField
           label="Title"
           type="text"
@@ -110,6 +113,7 @@ const AddPost = () => {
           placeholder="Enter post title"
         />
 
+        {/* Slug */}
         <InputField
           label="Slug"
           type="text"
@@ -117,32 +121,36 @@ const AddPost = () => {
           readOnly
           value={formData.slug}
         />
-        <p className="text-right text-xs font-medium mt-1">
+        <p className="text-right text-xs font-medium mt-1 text-gray-500 dark:text-gray-400">
           Slug will be generated from title
         </p>
 
         {/* Image Upload */}
         <div>
-          <label className="block font-medium mb-1">Cover Image</label>
+          <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
+            Cover Image
+          </label>
           <input
             type="file"
             accept="image/*"
             name="image"
             onChange={handleImageChange}
-            className="block"
+            className="block w-full text-sm text-gray-700 dark:text-gray-200 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 dark:file:bg-blue-900 dark:file:text-blue-300"
           />
           {imagePreview && (
             <img
               src={imagePreview}
               alt="Preview"
-              className="mt-2 w-48 h-32 object-cover border rounded"
+              className="mt-3 w-48 h-32 object-cover border rounded-lg"
             />
           )}
         </div>
 
         {/* Content Editor */}
         <div>
-          <label className="block font-medium mb-1">Content</label>
+          <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
+            Content
+          </label>
           <JoditEditor
             ref={editor}
             value={formData.content}
@@ -153,23 +161,24 @@ const AddPost = () => {
         </div>
 
         {/* Category */}
-        <div className="flex gap-3 items-center">
-          <div className="flex-1">
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
-            >
-              <option value="">Select a category</option>
-              {categories.map((cat) => (
-                <option key={cat._id} value={cat._id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div>
+          <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
+            Category
+          </label>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-lg bg-white dark:bg-dark-secondary dark:border-gray-700 dark:text-gray-200"
+            required
+          >
+            <option value="">Select a category</option>
+            {categories.map((cat) => (
+              <option key={cat._id} value={cat._id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Tags */}
@@ -195,6 +204,7 @@ const AddPost = () => {
           ]}
         />
 
+        {/* Submit */}
         <GlobalButton
           type="submit"
           title={loading ? "Submitting..." : "Add Post"}
